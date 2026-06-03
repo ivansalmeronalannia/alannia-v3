@@ -10,7 +10,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -19,12 +19,8 @@ jobs:
       - name: Instalar dependencias
         run: npm install
 
-      - name: Construir proyecto Web
-        run: |
-          # Si usas algún framework (Ionic/Vite/React) descomenta la línea de abajo cambiando 'build' por tu script:
-          # npm run build
-          # Si es HTML puro, nos aseguramos de que Capacitor vea la carpeta web creando un index si hiciera falta:
-          mkdir -p www
+      - name: Preparar carpeta web
+        run: mkdir -p www
 
       - name: Forzar Regeneración Limpia de iOS en Mac
         run: |
@@ -35,8 +31,17 @@ jobs:
       - name: Compilar App (.app)
         run: |
           cd ios/App
-          xcodebuild -workspace App.xcworkspace -scheme App -configuration Debug -allowProvisioningDeviceRegistration -allowProvisioningUpdates CODE_SIGNING_ALLOWED=NO
-          
+          xcodebuild -resolvePackageDependencies \
+            -project App.xcodeproj \
+            -scheme App
+          xcodebuild \
+            -project App.xcodeproj \
+            -scheme App \
+            -configuration Debug \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath DerivedData \
+            CODE_SIGNING_ALLOWED=NO
+
       - name: Subir archivo final
         uses: actions/upload-artifact@v4
         with:
