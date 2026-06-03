@@ -13,7 +13,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20  # Actualizado para evitar avisos de deprecación
+          node-version: 22  # Actualizado para evitar avisos de deprecación
           cache: 'npm'
 
       - name: Instalar dependencias
