@@ -19,8 +19,12 @@ jobs:
       - name: Instalar dependencias
         run: npm install
 
-      - name: Instalar entorno de iOS para Capacitor
-        run: npm install @capacitor/ios
+      - name: Construir proyecto Web
+        run: |
+          # Si usas algún framework (Ionic/Vite/React) descomenta la línea de abajo cambiando 'build' por tu script:
+          # npm run build
+          # Si es HTML puro, nos aseguramos de que Capacitor vea la carpeta web creando un index si hiciera falta:
+          mkdir -p www
 
       - name: Forzar Regeneración Limpia de iOS en Mac
         run: |
