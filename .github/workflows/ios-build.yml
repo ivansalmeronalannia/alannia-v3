@@ -24,7 +24,6 @@ jobs:
 
       - name: Crear y Sincronizar Plataforma iOS
         run: |
-          npx cap add ios
           npx cap sync ios
 
       - name: Compilar App (.app)
