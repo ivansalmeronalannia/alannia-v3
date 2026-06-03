@@ -32,11 +32,6 @@ jobs:
           npx cap add ios
           npx cap sync ios
 
-      - name: Instalar CocoaPods y generar Workspace
-        run: |
-          cd ios/App
-          pod install
-
       - name: Compilar App (.app)
         run: |
           cd ios/App
