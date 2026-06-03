@@ -2,24 +2,29 @@ name: Compilar para iOS (Cortesía de GitHub)
 
 on:
   push:
-    branches: [ main ] # Se activa al subir cambios
-  workflow_dispatch: # Botón manual en la web
+    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   build:
-    runs-on: macos-latest # ¡Aquí pedimos el Mac prestado a GitHub!
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20  # Actualizado para evitar avisos de deprecación
           cache: 'npm'
 
       - name: Instalar dependencias
         run: npm install
 
-      - name: Sincronizar Capacitor iOS
+      - name: Instalar entorno de iOS para Capacitor
+        run: npm install @capacitor/ios
+
+      - name: Crear y Sincronizar Plataforma iOS
         run: |
+          npx cap add ios
           npx cap sync ios
 
       - name: Compilar App (.app)
