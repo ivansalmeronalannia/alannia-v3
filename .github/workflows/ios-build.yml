@@ -10,10 +10,10 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-
+      
       - uses: actions/setup-node@v4
         with:
-          node-version: 22  # Actualizado para evitar avisos de deprecación
+          node-version: 22
           cache: 'npm'
 
       - name: Instalar dependencias
@@ -22,8 +22,10 @@ jobs:
       - name: Instalar entorno de iOS para Capacitor
         run: npm install @capacitor/ios
 
-      - name: Crear y Sincronizar Plataforma iOS
+      - name: Forzar Regeneración Limpia de iOS en Mac
         run: |
+          rm -rf ios
+          npx cap add ios
           npx cap sync ios
 
       - name: Instalar CocoaPods y generar Workspace
@@ -35,7 +37,7 @@ jobs:
         run: |
           cd ios/App
           xcodebuild -workspace App.xcworkspace -scheme App -configuration Debug -allowProvisioningDeviceRegistration -allowProvisioningUpdates CODE_SIGNING_ALLOWED=NO
-
+          
       - name: Subir archivo final
         uses: actions/upload-artifact@v4
         with:
