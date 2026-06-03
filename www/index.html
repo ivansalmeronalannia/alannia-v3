@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+    <meta name="apple-mobile-web-app-title" content="Alannia"/>
+    <meta name="theme-color" content="#f08050"/>
+    <link rel="manifest" href="manifest.json"/>
+    <link rel="apple-touch-icon" href="icon.png"/>
+    <title>Alannia Resorts</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+
+    <script src="capacitor.js"></script>
+
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        html, body { height: 100%; overflow: hidden; font-family: var(--sans); -webkit-font-smoothing: antialiased; }
+
+        :root {
+          --gradient: linear-gradient(135deg, #fbbb21 0%, #f08050 50%, #e83278 100%);
+          --sans: 'Montserrat', system-ui, sans-serif;
+
+          --bg-app: #f8fafc;
+          --bg-item: linear-gradient(135deg, rgba(251, 187, 33, 0.08) 0%, rgba(240, 128, 80, 0.08) 50%, rgba(232, 50, 120, 0.08) 100%);
+          --bg-item-visited: #e83278;
+          --text-item-name: #1e293b;
+          --text-section: #94a3b8;
+          --text-provincia: #334155;
+        }
+
+        [data-theme="dark"] {
+          --bg-app: #0f172a;
+          --bg-item: linear-gradient(135deg, rgba(251, 187, 33, 0.05) 0%, rgba(30, 41, 59, 0.8) 60%, rgba(232, 50, 120, 0.05) 100%);
+          --bg-item-visited: #8b1e47;
+          --text-item-name: #f1f5f9;
+          --text-section: #cbd5e1;
+          --text-provincia: #f8fafc;
+        }
+
+        #app {
+          width: 100%;
+          height: 100dvh;
+          display: flex;
+          flex-direction: column;
+          position: relative;
+          overflow: hidden;
+          background: var(--bg-app);
+          transition: background 0.3s ease;
+        }
+
+        /* ── CABECERA FIJA ADAPTATIVA ── */
+        .home-header {
+          background: var(--gradient);
+          padding: calc(env(safe-area-inset-top) + 16px) 24px 16px;
+          flex-shrink: 0;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          z-index: 10;
+          box-shadow: 0 4px 20px rgba(240, 128, 80, 0.15);
+          transition: padding 0.3s ease;
+        }
+        .header-text { display: flex; flex-direction: column; transition: all 0.3s ease; }
+        .header-label { font-size: 11px; font-weight: 600; letter-spacing: 3px; color: rgba(255,255,255,0.85); text-transform: uppercase; margin-bottom: 2px; }
+        .header-title { font-size: 24px; font-weight: 700; color: #fff; letter-spacing: -0.5px; line-height: 1; }
+
+        /* MODIFICADO: Botón de tema circular pulido con SVG adaptativo centrado */
+        .theme-toggle-btn {
+          background: rgba(255, 255, 255, 0.18);
+          border: none;
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          color: #ffffff;
+          transition: background 0.2s, transform 0.2s;
+        }
+        .theme-toggle-btn:active { transform: scale(0.92); background: rgba(255, 255, 255, 0.3); }
+        .theme-toggle-btn svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+        /* Botón de volver atrás */
+        .back-btn {
+          background: rgba(255, 255, 255, 0.2);
+          border: none;
+          color: white;
+          padding: 6px 14px;
+          border-radius: 20px;
+          font-family: var(--sans);
+          font-size: 11px;
+          font-weight: 700;
+          cursor: pointer;
+          display: none;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+        .back-btn:active { background: rgba(255, 255, 255, 0.3); }
+
+        .detail-active .home-header { padding: calc(env(safe-area-inset-top) + 12px) 24px 12px; }
+        .detail-active .header-text { flex-direction: row; align-items: center; gap: 6px; }
+        .detail-active .header-label { font-size: 12px; letter-spacing: 0.5px; text-transform: none; font-weight: 400; margin-bottom: 0; }
+        .detail-active .header-title { font-size: 16px; }
+        .detail-active .theme-toggle-btn { display: none !important; }
+
+        /* ── CONTENEDOR DE PANTALLAS ── */
+        .views-wrapper {
+          flex: 1;
+          position: relative;
+          width: 100%;
+        }
+
+        .view {
+          position: absolute;
+          inset: 0;
+          display: flex;
+          flex-direction: column;
+          background: var(--bg-app);
+          transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), top 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        #home-view { z-index: 2; transform: translateX(0); }
+        #detail-view { z-index: 1; transform: translateX(100%); display: none; }
+
+        .detail-active .view { top: 0; }
+        .detail-active #home-view { transform: translateX(-100%); }
+        .detail-active #detail-view { transform: translateX(0); z-index: 3; display: flex; }
+        .detail-active .back-btn { display: block; }
+
+        .list-container {
+          flex: 1;
+          overflow-y: auto;
+          scrollbar-width: none;
+          padding: 24px 20px calc(env(safe-area-inset-bottom) + 24px);
+        }
+        .list-container::-webkit-scrollbar { display: none; }
+
+        .content-wrapper { width: 100%; max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; }
+        .section-label { font-size: 11px; font-weight: 700; letter-spacing: 2px; color: var(--text-section); text-transform: uppercase; margin-bottom: 10px; padding-left: 4px; }
+        .provincia-label { font-size: 15px; font-weight: 700; color: var(--text-provincia); margin: 24px 0 12px 4px; letter-spacing: -0.2px; }
+
+        .resort-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+          gap: 14px;
+          margin-bottom: 8px;
+        }
+
+        .resort-item {
+          display: flex;
+          flex-direction: column;
+          background: var(--bg-item);
+          padding: 8px;
+          border-radius: 20px;
+          cursor: pointer;
+          position: relative;
+          overflow: hidden;
+          box-shadow: 0 4px 14px rgba(240, 128, 80, 0.04);
+          transition: transform 0.2s ease;
+          border: 2px solid transparent;
+          background-clip: padding-box;
+        }
+        .resort-item::after {
+          content: ''; position: absolute; inset: 0; border-radius: 20px;
+          padding: 2px; background: var(--gradient);
+          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          -webkit-mask-composite: xor; mask-composite: exclude;
+          pointer-events: none; opacity: 0.2;
+        }
+        .resort-item:active { transform: scale(0.96); }
+
+        .resort-img-container {
+          width: 100%;
+          aspect-ratio: 4 / 3;
+          border-radius: 14px;
+          overflow: hidden;
+          margin-bottom: 8px;
+          position: relative;
+        }
+        .resort-img { width: 100%; height: 100%; object-fit: cover; }
+
+        .resort-item-name {
+          font-size: 13px;
+          font-weight: 600;
+          color: var(--text-item-name);
+          text-align: center;
+          padding: 2px 4px 6px;
+          line-height: 1.2;
+        }
+
+        .resort-item.visited { background: var(--bg-item-visited); }
+        .resort-item.visited::after { opacity: 0; }
+        .resort-item.visited .resort-item-name { color: #ffffff; }
+
+        .badge-container { position: absolute; top: 6px; right: 6px; display: flex; flex-direction: column; gap: 4px; z-index: 4; }
+        .new-badge { font-size: 8px; font-weight: 800; color: #fff; background: #e83278; padding: 3px 5px; border-radius: 5px; text-transform: uppercase; }
+        .visited-badge { font-size: 8px; font-weight: 800; color: #111; background: #fbbb21; padding: 3px 5px; border-radius: 5px; text-transform: uppercase; }
+
+        /* Visor Web */
+        .iframe-container { width: 100%; height: 100%; background: #ffffff; }
+        .detail-iframe { width: 100%; height: 100%; border: none; background: #ffffff; }
+    </style>
+</head>
+<body>
+<div id="app">
+
+    <div class="home-header">
+        <div class="header-text">
+            <div id="header-label" class="header-label">Bienvenido a</div>
+            <div id="main-title" class="header-title">Alannia Resorts</div>
+        </div>
+
+        <button id="theme-toggle" class="theme-toggle-btn" onclick="toggleTheme()"></button>
+
+        <button class="back-btn" onclick="closeResort()">← Volver</button>
+    </div>
+
+    <div class="views-wrapper">
+
+        <div id="home-view" class="view">
+            <div class="list-container">
+                <div class="content-wrapper">
+                    <div class="section-label">Elige tu camping</div>
+                    <div id="resort-categories"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="detail-view" class="view">
+            <div class="iframe-container">
+                <iframe class="detail-iframe" id="detail-iframe" src="" title="Visor Web Alannia"></iframe>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    var RESORTS = [
+      { name:'Alannia Salou', url:'https://as.alanniaresorts.com/', provincia:'Tarragona', img:'salou.jpg' },
+      { name:'Alannia Costa Dorada', url:'https://acd.alanniaresorts.com/', provincia:'Tarragona', img:'CD.jpg' },
+      { name:'Alannia Els Prats', url:'https://aep.alanniaresorts.com/', provincia:'Tarragona', img:'elsprats.jpg' },
+
+      { name:'Alannia Guardamar', url:'https://ag.alanniaresorts.com/', provincia:'Alicante', img:'guardamar.jpg' },
+      { name:'Alannia Costa Blanca', url:'https://acb.alanniaresorts.com/', provincia:'Alicante', img:'costablanca.jpg' },
+
+      { name:'Alannia El Pinar', url:'https://apin.alanniaresorts.com/', provincia:'Girona', img:'pinar.jpg', isNew: true },
+      { name:'Alannia Neptuno', url:'https://anep.alanniaresorts.com/', provincia:'Girona', img:'neptuno.jpg', isNew: true }
+    ];
+
+    var visited = {};
+
+    // MODIFICADO: Plantillas de vectores gráficos SVG puros e impecables
+    var SUN_SVG = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>';
+    var MOON_SVG = '<svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>';
+
+    function renderList() {
+      var container = document.getElementById('resort-categories');
+      container.innerHTML = '';
+
+      var provincias = [];
+      RESORTS.forEach(function(r) {
+        if (provincias.indexOf(r.provincia) === -1) { provincias.push(r.provincia); }
+      });
+
+      var globalIndex = 0;
+      provincias.forEach(function(provincia) {
+        var groupDiv = document.createElement('div');
+        groupDiv.className = 'provincia-group';
+
+        var label = document.createElement('div');
+        label.className = 'provincia-label';
+        label.textContent = provincia;
+        groupDiv.appendChild(label);
+
+        var gridDiv = document.createElement('div');
+        gridDiv.className = 'resort-grid';
+
+        var filtered = RESORTS.filter(function(r) { return r.provincia === provincia; });
+
+        filtered.forEach(function(r) {
+          var item = document.createElement('div');
+          item.className = 'resort-item' + (visited[r.name] ? ' visited' : '');
+          globalIndex++;
+
+          var newBadgeHtml = r.isNew ? '<span class="new-badge">NEW</span>' : '';
+          var visitedBadgeHtml = visited[r.name] ? '<span class="visited-badge">Visitado</span>' : '';
+
+          item.innerHTML =
+            '<div class="resort-img-container">' +
+              '<div class="badge-container">' + newBadgeHtml + visitedBadgeHtml + '</div>' +
+              '<img src="' + r.img + '" alt="' + r.name + '" class="resort-img">' +
+            '</div>' +
+            '<span class="resort-item-name">' + r.name + '</span>';
+
+          item.addEventListener('click', function() { openResort(r); });
+          gridDiv.appendChild(item);
+        });
+
+        groupDiv.appendChild(gridDiv);
+        container.appendChild(groupDiv);
+      });
+    }
+
+    function openResort(r) {
+      visited[r.name] = true;
+      renderList();
+
+      document.getElementById('detail-iframe').src = r.url;
+      document.getElementById('app').classList.add('detail-active');
+    }
+
+    function closeResort() {
+      document.getElementById('app').classList.remove('detail-active');
+      document.getElementById('detail-iframe').src = '';
+    }
+
+    // MODIFICADO: Intercambio fluido de código SVG al cambiar el tema de la app
+    function toggleTheme() {
+      var currentTheme = document.documentElement.getAttribute('data-theme');
+      if (currentTheme === 'dark') {
+        document.documentElement.removeAttribute('data-theme');
+        document.getElementById('theme-toggle').innerHTML = MOON_SVG;
+        localStorage.setItem('alannia_theme', 'light');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        document.getElementById('theme-toggle').innerHTML = SUN_SVG;
+        localStorage.setItem('alannia_theme', 'dark');
+      }
+    }
+
+    // Comprobación de estado inicial e inyección del SVG correcto
+    var savedTheme = localStorage.getItem('alannia_theme') || 'light';
+    if (savedTheme === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+      document.getElementById('theme-toggle').innerHTML = SUN_SVG;
+    } else {
+      document.getElementById('theme-toggle').innerHTML = MOON_SVG;
+    }
+
+    renderList();
+</script>
+</body>
+</html>

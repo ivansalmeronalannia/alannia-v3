@@ -1,0 +1,15 @@
+# Dependencias locales (no se suben)
+node_modules/
+
+# Archivos de configuración del editor (locales de tu PC)
+.idea/
+
+# Carpetas de compilación de Android que dan error
+/android/build/
+/android/.gradle/
+/android/.idea/
+local.properties
+
+# Logs de error del sistema
+*.log
+npm-debug.log*
